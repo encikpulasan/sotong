@@ -1,25 +1,32 @@
-import { useSignal } from "@preact/signals";
-import Counter from "../islands/Counter.tsx";
+import { Head } from "$fresh/runtime.ts";
 
 export default function Home() {
-  const count = useSignal(3);
   return (
-    <div class="px-4 py-8 mx-auto bg-[#86efac]">
-      <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center">
-        <img
-          class="my-6"
-          src="/logo.svg"
-          width="128"
-          height="128"
-          alt="the Fresh logo: a sliced lemon dripping with juice"
+    <>
+      <Head>
+        <title>Pay Slip Generator</title>
+        <meta
+          name="description"
+          content="Generate professional pay slips easily"
         />
-        <h1 class="text-4xl font-bold">Welcome to Fresh</h1>
-        <p class="my-4">
-          Try updating this message in the
-          <code class="mx-2">./routes/index.tsx</code> file, and refresh.
-        </p>
-        <Counter count={count} />
+      </Head>
+      <div class="p-4 mx-auto max-w-screen-md">
+        <div class="flex flex-col items-center justify-center min-h-screen">
+          <h1 class="text-4xl font-bold mb-6 text-center">
+            Pay Slip Generator
+          </h1>
+          <p class="mb-8 text-center text-gray-600">
+            Create professional pay slips for your employees with just a few
+            clicks
+          </p>
+          <a
+            href="/payslip"
+            class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-300"
+          >
+            Create Pay Slip
+          </a>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -4,22 +4,30 @@
 
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
+import * as $api_download_payslip from "./routes/api/download-payslip.ts";
 import * as $api_joke from "./routes/api/joke.ts";
+import * as $api_save_user from "./routes/api/save-user.ts";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
+import * as $payslip_index from "./routes/payslip/index.tsx";
 import * as $Counter from "./islands/Counter.tsx";
+import * as $PayslipForm from "./islands/PayslipForm.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
+    "./routes/api/download-payslip.ts": $api_download_payslip,
     "./routes/api/joke.ts": $api_joke,
+    "./routes/api/save-user.ts": $api_save_user,
     "./routes/greet/[name].tsx": $greet_name_,
     "./routes/index.tsx": $index,
+    "./routes/payslip/index.tsx": $payslip_index,
   },
   islands: {
     "./islands/Counter.tsx": $Counter,
+    "./islands/PayslipForm.tsx": $PayslipForm,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
