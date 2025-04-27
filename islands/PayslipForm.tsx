@@ -140,6 +140,9 @@ export default function PayslipForm() {
   const totalSteps = 7; // Total number of steps excluding preview
   const currentStepNumber = getStepNumber(step);
 
+  // Add a state variable to store the payslip ID
+  const [payslipId, setPayslipId] = useState<string | null>(null);
+
   function getStepNumber(currentStep: FormStep): number {
     const stepOrder = {
       "company-info": 1,
@@ -257,8 +260,8 @@ export default function PayslipForm() {
 
     if (validateStep("user-info")) {
       try {
-        // Save user info to KV store
-        const response = await fetch("/api/save-user", {
+        // First, save user info to KV store
+        const userResponse = await fetch("/api/save-user", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -266,13 +269,34 @@ export default function PayslipForm() {
           body: JSON.stringify(userInfo),
         });
 
-        if (response.ok) {
-          // Move to preview step
-          setStep("preview");
-        } else {
-          const error = await response.text();
-          alert(`Error saving user info: ${error}`);
+        if (!userResponse.ok) {
+          const error = await userResponse.text();
+          throw new Error(`Error saving user info: ${error}`);
         }
+
+        // Then, save payslip data associated with this user
+        const payslipResponse = await fetch("/api/save-payslip", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userInfo.email, // Use email as userId for simplicity
+            data: payslipData,
+          }),
+        });
+
+        if (!payslipResponse.ok) {
+          const error = await payslipResponse.text();
+          throw new Error(`Error saving payslip: ${error}`);
+        }
+
+        // Get the payslip ID from the response
+        const result = await payslipResponse.json();
+        setPayslipId(result.id);
+
+        // Move to preview step
+        setStep("preview");
       } catch (error: unknown) {
         const errorMessage = error instanceof Error
           ? error.message
@@ -356,12 +380,20 @@ export default function PayslipForm() {
 
   // Handle download
   const handleDownload = () => {
-    window.open(
-      "/api/download-payslip?" + new URLSearchParams({
-        data: JSON.stringify(payslipData),
-      }),
-      "_blank",
-    );
+    // If we have a payslip ID, use it. Otherwise, fall back to sending the data in the URL
+    if (payslipId) {
+      window.open(
+        `/api/download-payslip?id=${payslipId}`,
+        "_blank",
+      );
+    } else {
+      window.open(
+        "/api/download-payslip?" + new URLSearchParams({
+          data: JSON.stringify(payslipData),
+        }),
+        "_blank",
+      );
+    }
   };
 
   return (

@@ -1,4 +1,6 @@
+/// <reference lib="deno.unstable" />
 import { Handlers } from "$fresh/server.ts";
+import { getPayslipById } from "../../utils/kv-storage.ts";
 
 interface PayslipData {
   // Company information
@@ -55,13 +57,26 @@ export const handler: Handlers = {
   async GET(req) {
     try {
       const url = new URL(req.url);
+      const payslipId = url.searchParams.get("id");
       const payslipDataStr = url.searchParams.get("data");
 
-      if (!payslipDataStr) {
-        return new Response("Missing payslip data", { status: 400 });
-      }
+      let payslipData: PayslipData;
 
-      const payslipData: PayslipData = JSON.parse(payslipDataStr);
+      // First try to get data from KV storage using ID
+      if (payslipId) {
+        const storedPayslip = await getPayslipById(payslipId);
+        if (storedPayslip && storedPayslip.data) {
+          // Use the stored payslip data with type assertion for safety
+          payslipData = storedPayslip.data as unknown as PayslipData;
+        } else {
+          return new Response("Payslip not found", { status: 404 });
+        }
+      } else if (payslipDataStr) {
+        // Fall back to query parameter data if no ID is provided
+        payslipData = JSON.parse(payslipDataStr);
+      } else {
+        return new Response("Missing payslip data or ID", { status: 400 });
+      }
 
       // Calculate total deductions
       const totalDeductions = payslipData.pcbDeduction +

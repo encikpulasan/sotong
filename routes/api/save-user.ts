@@ -1,14 +1,12 @@
 /// <reference lib="deno.unstable" />
 import { Handlers } from "$fresh/server.ts";
+import { getUserByEmail, saveUser, UserData } from "../../utils/kv-storage.ts";
 
 interface UserInfo {
   name: string;
   email: string;
   phone: string;
 }
-
-// In-memory storage as a fallback when Deno KV is not available
-const inMemoryUsers = new Map<string, Record<string, unknown>>();
 
 export const handler: Handlers = {
   async GET(req) {
@@ -20,23 +18,7 @@ export const handler: Handlers = {
         return new Response("Email parameter is required", { status: 400 });
       }
 
-      const userId = `user:${email}`;
-      let userData: Record<string, unknown> | null = null;
-
-      try {
-        // Try to get from Deno KV
-        const kv = await Deno.openKv();
-        const entry = await kv.get([userId]);
-        userData = entry.value as Record<string, unknown> | null;
-        kv.close();
-      } catch (kvError) {
-        // Fallback to in-memory storage
-        console.warn(
-          "Deno KV not available for retrieval, using in-memory storage:",
-          kvError,
-        );
-        userData = inMemoryUsers.get(userId) || null;
-      }
+      const userData = await getUserByEmail(email);
 
       if (!userData) {
         return new Response("User not found", { status: 404 });
@@ -60,30 +42,17 @@ export const handler: Handlers = {
         return new Response("Missing required fields", { status: 400 });
       }
 
-      // Create a unique ID for the user based on email
-      const userId = `user:${userInfo.email}`;
-
-      const userData = {
+      const userData: UserData = {
         name: userInfo.name,
         email: userInfo.email,
         phone: userInfo.phone,
         createdAt: new Date().toISOString(),
       };
 
-      try {
-        // Try to use Deno KV
-        const kv = await Deno.openKv();
-        await kv.set([userId], userData);
-        kv.close();
-        console.log("User saved to Deno KV:", userId);
-      } catch (kvError) {
-        // Fallback to in-memory storage if Deno KV is not available
-        console.warn(
-          "Deno KV not available, using in-memory storage:",
-          kvError,
-        );
-        inMemoryUsers.set(userId, userData);
-        console.log("User saved to in-memory storage:", userId);
+      const success = await saveUser(userData);
+
+      if (!success) {
+        return new Response("Failed to save user data", { status: 500 });
       }
 
       return new Response(JSON.stringify({ success: true }), {
