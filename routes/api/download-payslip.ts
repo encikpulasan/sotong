@@ -1,6 +1,17 @@
 /// <reference lib="deno.unstable" />
 import { Handlers } from "$fresh/server.ts";
 import { getPayslipById } from "../../utils/kv-storage.ts";
+import { recordApiKeyUsage } from "../../utils/apiUsers.ts";
+
+// API key verification middleware
+async function verifyApiKey(request: Request): Promise<boolean> {
+  const apiKey = request.headers.get("X-API-Key");
+  if (!apiKey) return false;
+
+  // Use the recordApiKeyUsage function which checks if the key exists
+  // and increments the usage count if it does
+  return await recordApiKeyUsage(apiKey);
+}
 
 interface PayslipData {
   // Company information
@@ -56,6 +67,18 @@ interface PayslipData {
 export const handler: Handlers = {
   async GET(req) {
     try {
+      // API key authentication
+      const isAuthenticated = await verifyApiKey(req);
+      if (!isAuthenticated) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized. Invalid or missing API key" }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
       const url = new URL(req.url);
       const payslipId = url.searchParams.get("id");
       const payslipDataStr = url.searchParams.get("data");

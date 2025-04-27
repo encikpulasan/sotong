@@ -27,7 +27,8 @@ export class KvStore {
 
   private async initKv() {
     try {
-      this.kv = await openKvToolbox({ path: ":memory:" });
+      // Use the default Deno KV database instead of in-memory
+      this.kv = await openKvToolbox();
     } catch (error) {
       console.error("Failed to initialize KV toolbox:", error);
       throw new Error(

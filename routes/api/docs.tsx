@@ -57,27 +57,29 @@ export default function ApiDocs() {
             </div>
 
             {/* Authentication Section */}
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-5 rounded-md mb-10">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Authentication
-              </h2>
-              <p className="text-gray-700 mb-3">
-                All API requests require an API key, sent as the{" "}
-                <code className="bg-yellow-100 px-1 py-0.5 rounded">
-                  X-API-Key
-                </code>{" "}
-                header.
+            <div id="authentication" className="mt-10">
+              <h2 className="text-2xl font-bold mb-4">Authentication</h2>
+              <p className="mb-4">
+                All API requests require an API key sent as the{" "}
+                <code>X-API-Key</code> header.
               </p>
-              <div className="bg-white p-3 rounded border border-yellow-200">
-                <p className="font-mono text-sm">
-                  For testing purposes, use:{" "}
-                  <span className="font-bold">test_api_key_12345</span>
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Note: In a production environment, you would need to request
-                  an API key from the service administrator.
-                </p>
-              </div>
+              <p className="mb-4">
+                You can generate an API key by registering for an account at
+                {" "}
+                <a
+                  href="/api/register"
+                  className="text-blue-600 hover:underline"
+                >
+                  /api/register
+                </a>{" "}
+                and then accessing your{" "}
+                <a
+                  href="/api/dashboard"
+                  className="text-blue-600 hover:underline"
+                >
+                  API dashboard
+                </a>.
+              </p>
             </div>
 
             {/* Endpoints Section */}
@@ -515,16 +517,18 @@ export default function ApiDocs() {
                       Calculate deductions
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-md overflow-auto">
-                      <pre className="text-sm text-gray-800">{`curl -X POST https://your-domain.com/api/calculate \\
+                      <pre className="bg-gray-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm">
+                        {`curl -X POST http://localhost:8000/api/calculate \\
   -H "Content-Type: application/json" \\
-  -H "X-API-Key: test_api_key_12345" \\
+  -H "X-API-Key: YOUR_API_KEY" \\
   -d '{
     "salary": 5000,
     "bonus": 1000,
     "epfRate": "11%",
     "socsoType": "both",
     "eisType": "auto"
-  }'`}</pre>
+  }'`}
+                      </pre>
                     </div>
                   </div>
 
@@ -533,14 +537,16 @@ export default function ApiDocs() {
                       Save user data
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-md overflow-auto">
-                      <pre className="text-sm text-gray-800">{`curl -X POST https://your-domain.com/api/save-user \\
+                      <pre className="bg-gray-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm">
+                        {`curl -X POST http://localhost:8000/api/save-user \\
   -H "Content-Type: application/json" \\
-  -H "X-API-Key: test_api_key_12345" \\
+  -H "X-API-Key: YOUR_API_KEY" \\
   -d '{
     "name": "John Doe",
     "email": "john@example.com",
     "phone": "0123456789"
-  }'`}</pre>
+  }'`}
+                      </pre>
                     </div>
                   </div>
 
@@ -549,9 +555,10 @@ export default function ApiDocs() {
                       Save payslip
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-md overflow-auto">
-                      <pre className="text-sm text-gray-800">{`curl -X POST https://your-domain.com/api/save-payslip \\
+                      <pre className="bg-gray-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm">
+                        {`curl -X POST http://localhost:8000/api/save-payslip \\
   -H "Content-Type: application/json" \\
-  -H "X-API-Key: test_api_key_12345" \\
+  -H "X-API-Key: YOUR_API_KEY" \\
   -d '{
     "userId": "john@example.com",
     "data": {
@@ -560,7 +567,8 @@ export default function ApiDocs() {
       "basicSalary": 5000,
       "bonus": 1000
     }
-  }'`}</pre>
+  }'`}
+                      </pre>
                     </div>
                   </div>
 
@@ -569,8 +577,10 @@ export default function ApiDocs() {
                       Download a payslip by ID
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-md overflow-auto">
-                      <pre className="text-sm text-gray-800">{`curl -X GET "https://your-domain.com/api/download-payslip?id=a1b2c3d4e5f6..." \\
-  -H "X-API-Key: test_api_key_12345"`}</pre>
+                      <pre className="bg-gray-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm">
+                        {`curl -X GET "http://localhost:8000/api/download-payslip?id=a1b2c3d4e5f6..." \\
+  -H "X-API-Key: YOUR_API_KEY"`}
+                      </pre>
                     </div>
                   </div>
                 </div>

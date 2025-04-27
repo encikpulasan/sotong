@@ -1,5 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { calculateDeductions } from "../../utils/calculations.ts";
+import { recordApiKeyUsage } from "../../utils/apiUsers.ts";
 
 interface PayslipData {
   // Company information
@@ -51,10 +52,9 @@ async function verifyApiKey(request: Request): Promise<boolean> {
   const apiKey = request.headers.get("X-API-Key");
   if (!apiKey) return false;
 
-  // In a production environment, you would verify this against a database
-  const validApiKey = "test_api_key_12345"; // Replace with secure key storage in production
-
-  return apiKey === validApiKey;
+  // Use the recordApiKeyUsage function which checks if the key exists
+  // and increments the usage count if it does
+  return await recordApiKeyUsage(apiKey);
 }
 
 export const handler: Handlers = {

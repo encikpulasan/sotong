@@ -5,10 +5,14 @@
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_calculate from "./routes/api/calculate.ts";
+import * as $api_dashboard from "./routes/api/dashboard.tsx";
 import * as $api_docs from "./routes/api/docs.tsx";
 import * as $api_download_payslip from "./routes/api/download-payslip.ts";
 import * as $api_download_pdf from "./routes/api/download-pdf.ts";
+import * as $api_login from "./routes/api/login.tsx";
+import * as $api_logout from "./routes/api/logout.ts";
 import * as $api_preview_payslip from "./routes/api/preview-payslip.ts";
+import * as $api_register from "./routes/api/register.tsx";
 import * as $api_save_payslip from "./routes/api/save-payslip.ts";
 import * as $api_save_user from "./routes/api/save-user.ts";
 import * as $index from "./routes/index.tsx";
@@ -24,10 +28,14 @@ const manifest = {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/api/calculate.ts": $api_calculate,
+    "./routes/api/dashboard.tsx": $api_dashboard,
     "./routes/api/docs.tsx": $api_docs,
     "./routes/api/download-payslip.ts": $api_download_payslip,
     "./routes/api/download-pdf.ts": $api_download_pdf,
+    "./routes/api/login.tsx": $api_login,
+    "./routes/api/logout.ts": $api_logout,
     "./routes/api/preview-payslip.ts": $api_preview_payslip,
+    "./routes/api/register.tsx": $api_register,
     "./routes/api/save-payslip.ts": $api_save_payslip,
     "./routes/api/save-user.ts": $api_save_user,
     "./routes/index.tsx": $index,
