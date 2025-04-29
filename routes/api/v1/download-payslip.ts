@@ -1,16 +1,31 @@
 /// <reference lib="deno.unstable" />
 import { Handlers } from "$fresh/server.ts";
-import { getPayslipById } from "../../utils/kv-storage.ts";
-import { recordApiKeyUsage } from "../../utils/apiUsers.ts";
+import { getPayslipById } from "../../../utils/kv-storage.ts";
+import { recordApiKeyUsage } from "../../../utils/apiUsers.ts";
+import { SessionManager } from "../../../utils/session.ts";
 
 // API key verification middleware
 async function verifyApiKey(request: Request): Promise<boolean> {
-  const apiKey = request.headers.get("X-API-Key");
-  if (!apiKey) return false;
+  // Check header first
+  const apiKeyHeader = request.headers.get("X-API-Key");
+  if (apiKeyHeader) {
+    return await recordApiKeyUsage(apiKeyHeader);
+  }
 
-  // Use the recordApiKeyUsage function which checks if the key exists
-  // and increments the usage count if it does
-  return await recordApiKeyUsage(apiKey);
+  // If no header, check query parameter
+  const url = new URL(request.url);
+  const apiKeyParam = url.searchParams.get("apiKey");
+  if (apiKeyParam) {
+    return await recordApiKeyUsage(apiKeyParam);
+  }
+
+  // If no query parameter, check session cookie
+  const session = await SessionManager.getSession(request);
+  if (session) {
+    return true;
+  }
+
+  return false;
 }
 
 interface PayslipData {

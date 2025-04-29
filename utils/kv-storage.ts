@@ -27,12 +27,13 @@ export class KvStore {
 
   private async initKv() {
     try {
-      // Use the default Deno KV database instead of in-memory
+      // Use the default Deno KV database
       this.kv = await openKvToolbox();
+      console.log("KV store initialized successfully");
     } catch (error) {
       console.error("Failed to initialize KV toolbox:", error);
       throw new Error(
-        "Failed to initialize KV store. Make sure KV is available.",
+        "Failed to initialize Deno KV. Make sure Deno KV is available in your environment.",
       );
     }
   }
@@ -40,7 +41,11 @@ export class KvStore {
   // Generic method to get data from KV
   async get<T>(key: Deno.KvKey): Promise<T | null> {
     if (!this.kv) await this.initKv();
-    if (!this.kv) throw new Error("KV store not initialized");
+    if (!this.kv) {
+      throw new Error(
+        "KV store not initialized. Deno KV is required for this application.",
+      );
+    }
 
     const entry = await this.kv.get<T>(key);
     return entry.value;
@@ -49,7 +54,11 @@ export class KvStore {
   // Generic method to set data in KV
   async set(key: Deno.KvKey, value: unknown): Promise<boolean> {
     if (!this.kv) await this.initKv();
-    if (!this.kv) throw new Error("KV store not initialized");
+    if (!this.kv) {
+      throw new Error(
+        "KV store not initialized. Deno KV is required for this application.",
+      );
+    }
 
     const result = await this.kv.set(key, value);
     return result.ok;
@@ -58,7 +67,11 @@ export class KvStore {
   // Generic method to delete data from KV
   async delete(key: Deno.KvKey): Promise<boolean> {
     if (!this.kv) await this.initKv();
-    if (!this.kv) throw new Error("KV store not initialized");
+    if (!this.kv) {
+      throw new Error(
+        "KV store not initialized. Deno KV is required for this application.",
+      );
+    }
 
     await this.kv.delete(key);
     return true;
@@ -67,7 +80,11 @@ export class KvStore {
   // Method to list all entries with a specific prefix
   async list<T>(prefix: Deno.KvKey): Promise<T[]> {
     if (!this.kv) await this.initKv();
-    if (!this.kv) throw new Error("KV store not initialized");
+    if (!this.kv) {
+      throw new Error(
+        "KV store not initialized. Deno KV is required for this application.",
+      );
+    }
 
     const iterator = this.kv.list<T>({ prefix });
     const results: T[] = [];
@@ -133,4 +150,23 @@ export async function getPayslipById(id: string): Promise<PayslipData | null> {
 export async function getUserPayslips(userId: string): Promise<PayslipData[]> {
   const store = getKvStore();
   return await store.list<PayslipData>(["user-payslips", userId]);
+}
+
+/**
+ * Get all payslips or payslips for a specific user
+ * @param userId Optional user ID. If not provided, returns all payslips
+ * @returns Array of payslip data
+ */
+export async function getPayslipsByUser(
+  userId: string | null,
+): Promise<PayslipData[]> {
+  const store = getKvStore();
+
+  if (userId) {
+    // Get payslips for a specific user
+    return await getUserPayslips(userId);
+  } else {
+    // Get all payslips
+    return await store.list<PayslipData>(["payslips"]);
+  }
 }

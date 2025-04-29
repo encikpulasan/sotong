@@ -1,6 +1,25 @@
 import { Head } from "$fresh/runtime.ts";
+import { Handlers, PageProps } from "$fresh/server.ts";
+import { ApiHeader, getApiHeaderProps } from "../../components/ApiHeader.tsx";
 
-export default function ApiDocs() {
+interface ApiDocsProps {
+  isLoggedIn: boolean;
+  username: string;
+}
+
+export const handler: Handlers<ApiDocsProps> = {
+  async GET(req, ctx) {
+    const headerProps = await getApiHeaderProps(req);
+    return ctx.render({
+      isLoggedIn: headerProps.isLoggedIn ?? false,
+      username: headerProps.username ?? "",
+    });
+  },
+};
+
+export default function ApiDocs({ data }: PageProps<ApiDocsProps>) {
+  const { isLoggedIn, username } = data;
+
   return (
     <>
       <Head>
@@ -13,35 +32,7 @@ export default function ApiDocs() {
 
       <div className="min-h-screen bg-gray-50">
         {/* Navigation Bar */}
-        <header className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <div className="flex items-center">
-              <svg
-                className="h-8 w-8 text-green-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4z" />
-                <path
-                  fillRule="evenodd"
-                  d="M2 14a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4zm14 0H4v4h12v-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="ml-2 text-xl font-semibold text-gray-800">
-                Payslip API
-              </span>
-            </div>
-            <div>
-              <a
-                href="/"
-                className="text-gray-500 hover:text-gray-700 font-medium"
-              >
-                Back to Home
-              </a>
-            </div>
-          </div>
-        </header>
+        <ApiHeader isLoggedIn={isLoggedIn} username={username} />
 
         <div className="py-10">
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,6 +44,9 @@ export default function ApiDocs() {
                 This API allows you to calculate payslip deductions, preview
                 payslips, save user data, and generate downloadable payslips
                 according to Malaysian standards.
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                <strong>Current API Version:</strong> v1
               </p>
             </div>
 
@@ -95,7 +89,7 @@ export default function ApiDocs() {
                     POST
                   </span>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    /api/calculate
+                    /api/v1/calculate
                   </h3>
                 </div>
                 <div className="px-6 py-5">
@@ -157,7 +151,7 @@ export default function ApiDocs() {
                     POST
                   </span>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    /api/preview-payslip
+                    /api/v1/preview-payslip
                   </h3>
                 </div>
                 <div className="px-6 py-5">
@@ -239,7 +233,7 @@ export default function ApiDocs() {
                     GET
                   </span>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    /api/download-payslip
+                    /api/v1/download-payslip
                   </h3>
                 </div>
                 <div className="px-6 py-5">
@@ -291,7 +285,7 @@ export default function ApiDocs() {
                     POST
                   </span>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    /api/save-user
+                    /api/v1/save-user
                   </h3>
                 </div>
                 <div className="px-6 py-5">
@@ -332,7 +326,7 @@ export default function ApiDocs() {
                     GET
                   </span>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    /api/save-user
+                    /api/v1/save-user
                   </h3>
                 </div>
                 <div className="px-6 py-5">
@@ -379,7 +373,7 @@ export default function ApiDocs() {
                     POST
                   </span>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    /api/save-payslip
+                    /api/v1/save-payslip
                   </h3>
                 </div>
                 <div className="px-6 py-5">
@@ -425,7 +419,7 @@ export default function ApiDocs() {
                     GET
                   </span>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    /api/save-payslip
+                    /api/v1/save-payslip
                   </h3>
                 </div>
                 <div className="px-6 py-5">
@@ -518,7 +512,7 @@ export default function ApiDocs() {
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-md overflow-auto">
                       <pre className="bg-gray-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm">
-                        {`curl -X POST http://localhost:8000/api/calculate \\
+                        {`curl -X POST http://localhost:8000/api/v1/calculate \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: YOUR_API_KEY" \\
   -d '{
@@ -538,7 +532,7 @@ export default function ApiDocs() {
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-md overflow-auto">
                       <pre className="bg-gray-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm">
-                        {`curl -X POST http://localhost:8000/api/save-user \\
+                        {`curl -X POST http://localhost:8000/api/v1/save-user \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: YOUR_API_KEY" \\
   -d '{
@@ -556,7 +550,7 @@ export default function ApiDocs() {
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-md overflow-auto">
                       <pre className="bg-gray-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm">
-                        {`curl -X POST http://localhost:8000/api/save-payslip \\
+                        {`curl -X POST http://localhost:8000/api/v1/save-payslip \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: YOUR_API_KEY" \\
   -d '{
@@ -578,9 +572,47 @@ export default function ApiDocs() {
                     </h4>
                     <div className="bg-gray-50 p-4 rounded-md overflow-auto">
                       <pre className="bg-gray-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm">
-                        {`curl -X GET "http://localhost:8000/api/download-payslip?id=a1b2c3d4e5f6..." \\
+                        {`curl -X GET "http://localhost:8000/api/v1/download-payslip?id=a1b2c3d4e5f6..." \\
   -H "X-API-Key: YOUR_API_KEY"`}
                       </pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* API Version History */}
+            <div className="mt-16">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                API Version History
+              </h2>
+
+              <div className="bg-white shadow overflow-hidden rounded-lg">
+                <div className="px-6 py-5 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Changelog
+                  </h3>
+                </div>
+                <div className="px-6 py-5">
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-md font-medium text-gray-700">
+                        v1.0.0 (Current) -{" "}
+                        <span className="text-sm text-gray-500">
+                          April 2025
+                        </span>
+                      </h4>
+                      <ul className="list-disc list-inside text-sm text-gray-600 mt-2 pl-2">
+                        <li>Initial API release</li>
+                        <li>
+                          Added calculation endpoints for Malaysian payslip
+                          standards
+                        </li>
+                        <li>
+                          Implemented user and payslip storage with Deno KV
+                        </li>
+                        <li>Added authentication with API keys</li>
+                      </ul>
                     </div>
                   </div>
                 </div>

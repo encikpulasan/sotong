@@ -1,76 +1,76 @@
 import { Head } from "$fresh/runtime.ts";
 import { Handlers, PageProps } from "$fresh/server.ts";
+import { Header } from "../components/Header.tsx";
 import { getUserByEmail } from "../utils/kv-storage.ts";
 import { SessionManager } from "../utils/session.ts";
 
 interface LoginData {
   error?: string;
-  success?: boolean;
+  success?: string;
   email?: string;
 }
 
 export const handler: Handlers<LoginData> = {
   async GET(req, ctx) {
-    // Check if user is already logged in
-    const session = await SessionManager.getSession(req);
-    if (session) {
-      // User is already logged in, redirect to payslip history
-      const headers = new Headers();
-      headers.set(
-        "Location",
-        `/payslip/history`,
-      );
-      return new Response(null, {
-        status: 302,
-        headers,
-      });
-    }
+    // Check query params for messages
+    const url = new URL(req.url);
+    const error = url.searchParams.get("error");
+    const success = url.searchParams.get("success");
 
-    return ctx.render({});
+    return ctx.render({
+      error: error || undefined,
+      success: success || undefined,
+    });
   },
 
   async POST(req, ctx) {
     const formData = await req.formData();
     const email = formData.get("email") as string;
 
-    if (!email || !email.includes("@")) {
-      return ctx.render({ error: "Please enter a valid email address" });
+    if (!email) {
+      return ctx.render({
+        error: "Email is required",
+      });
     }
 
     try {
-      // Check if the user exists in the KV store
-      const userData = await getUserByEmail(email);
+      // Check if user exists
+      const user = await getUserByEmail(email);
 
-      if (userData) {
-        // User exists, create a session
-        const session = await SessionManager.createSession(email);
-
-        // Redirect to payslip history
-        const headers = new Headers();
-        headers.set("Location", "/payslip/history");
-
-        // Create response with redirect
-        const response = new Response(null, {
-          status: 302,
-          headers,
-        });
-
-        // Set session cookie and return
-        return SessionManager.setSessionCookie(session, response);
-      } else {
-        // No user found with this email, but we'll allow them to continue
-        // This is just a simple login without registration
+      if (!user) {
         return ctx.render({
-          success: true,
+          error:
+            "No payslips found for this email. Please generate a payslip first.",
           email,
-          error: "No payslips found for this email. Please generate one first.",
         });
       }
-    } catch (error) {
-      console.error("Error during login:", error);
+
+      // Create a session for the user
+      let session = await SessionManager.createSession(email);
+      console.log("Session created for user", email);
+      let response = await SessionManager.setSessionCookie(
+        session,
+        new Response(),
+      );
+      console.log("Session cookie set for user", email);
+      console.log("Response", response);
+
+      // Redirect to payslip history with the email parameter
+      const headers = new Headers(response.headers);
+      headers.set(
+        "Location",
+        `/payslip/history?email=${encodeURIComponent(email)}`,
+      );
+      console.log("Redirecting to payslip history");
+      return new Response(null, {
+        status: 302,
+        headers,
+      });
+    } catch (err) {
+      const error = err as Error;
       return ctx.render({
-        error:
-          "An error occurred while checking your account. Please try again.",
+        error: error.message || "Login failed",
+        email,
       });
     }
   },
@@ -82,32 +82,17 @@ export default function Login({ data }: PageProps<LoginData>) {
   return (
     <>
       <Head>
-        <title>Login | Malaysian Payslip Generator</title>
+        <title>Login - Payslip Generator</title>
       </Head>
-      <div class=" flex items-center justify-center py-12 px-4">
+      <Header />
+      <div class=" bg-green-50 flex items-center justify-center py-12 px-4">
         <div class="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
           <div class="px-6 py-8">
             <div class="text-center mb-8">
-              <a href="/" class="inline-block">
-                <svg
-                  class="h-12 w-12 text-green-600 mx-auto"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4z" />
-                  <path
-                    fill-rule="evenodd"
-                    d="M2 14a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4zm14 0H4v4h12v-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </a>
-              <h2 class="mt-4 text-3xl font-bold text-gray-800">
-                Sign in to your account
+              <h2 class="text-3xl font-bold text-gray-800">
+                Login
               </h2>
-              <p class="mt-2 text-gray-600">
-                Access your payslips and history
-              </p>
+              <p class="mt-2 text-gray-600">View your saved payslips</p>
             </div>
 
             {error && (
@@ -116,19 +101,9 @@ export default function Login({ data }: PageProps<LoginData>) {
               </div>
             )}
 
-            {success && email && (
-              <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
-                <p class="text-yellow-700">
-                  No payslips found for this email. Please generate one first.
-                </p>
-                <div class="mt-4">
-                  <a
-                    href="/payslip"
-                    class="inline-block px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                  >
-                    Create Payslip
-                  </a>
-                </div>
+            {success && (
+              <div class="bg-green-100 border-l-4 border-green-500 p-4 mb-6">
+                <p class="text-green-700">{success}</p>
               </div>
             )}
 
@@ -145,10 +120,10 @@ export default function Login({ data }: PageProps<LoginData>) {
                     id="email"
                     name="email"
                     type="email"
-                    autoComplete="email"
+                    value={email}
                     required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="your@email.com"
+                    placeholder="Enter your email"
                   />
                 </div>
               </div>
@@ -156,23 +131,34 @@ export default function Login({ data }: PageProps<LoginData>) {
               <div>
                 <button
                   type="submit"
-                  class="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition duration-300"
+                  class="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md"
                 >
-                  Sign in
+                  View My Payslips
                 </button>
               </div>
             </form>
 
             <div class="mt-8 text-center">
               <p class="text-sm text-gray-600">
-                Don't have an account?{" "}
+                Don't have any payslips yet?{" "}
                 <a
                   href="/payslip"
                   class="text-green-600 hover:text-green-700 font-medium"
                 >
-                  Generate a payslip
-                </a>{" "}
-                to get started.
+                  Generate a Payslip
+                </a>
+              </p>
+            </div>
+
+            <div class="mt-4 text-center">
+              <p class="text-sm text-gray-600">
+                Looking for API access?{" "}
+                <a
+                  href="/api/login"
+                  class="text-indigo-600 hover:text-indigo-700 font-medium"
+                >
+                  API Login
+                </a>
               </p>
             </div>
           </div>

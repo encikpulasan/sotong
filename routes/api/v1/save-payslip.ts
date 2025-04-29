@@ -5,8 +5,9 @@ import {
   getUserPayslips,
   PayslipData,
   savePayslip,
-} from "../../utils/kv-storage.ts";
+} from "../../../utils/kv-storage.ts";
 import { crypto } from "$std/crypto/mod.ts";
+import { recordApiKeyUsage } from "../../../utils/apiUsers.ts";
 
 // Convert ArrayBuffer to a hex string
 function bufferToHex(buffer: ArrayBuffer): string {
@@ -22,6 +23,24 @@ async function generateId(): Promise<string> {
     new TextEncoder().encode(crypto.randomUUID() + Date.now().toString()),
   );
   return bufferToHex(buffer).slice(0, 16);
+}
+
+// API key verification middleware
+async function verifyApiKey(request: Request): Promise<boolean> {
+  // Check header first
+  const apiKeyHeader = request.headers.get("X-API-Key");
+  if (apiKeyHeader) {
+    return await recordApiKeyUsage(apiKeyHeader);
+  }
+
+  // If no header, check query parameter
+  const url = new URL(request.url);
+  const apiKeyParam = url.searchParams.get("apiKey");
+  if (apiKeyParam) {
+    return await recordApiKeyUsage(apiKeyParam);
+  }
+
+  return false;
 }
 
 export const handler: Handlers = {
@@ -62,6 +81,18 @@ export const handler: Handlers = {
 
   async POST(req) {
     try {
+      // API key authentication
+      const isAuthenticated = await verifyApiKey(req);
+      if (!isAuthenticated) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized. Invalid or missing API key" }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
       const data = await req.json();
 
       // Validate required fields

@@ -1,7 +1,6 @@
 import { Head } from "$fresh/runtime.ts";
 import { Handlers, PageProps } from "$fresh/server.ts";
 import {
-  ApiKey,
   ApiSessionManager,
   ApiUser,
   generateApiKey,
@@ -62,7 +61,7 @@ export const handler: Handlers<DashboardData> = {
     }
   },
 
-  async POST(req, ctx) {
+  async POST(req, _ctx) {
     // Check if user is logged in
     const session = await ApiSessionManager.getSession(req);
     if (!session) {
@@ -181,7 +180,7 @@ export default function Dashboard({ data }: PageProps<DashboardData>) {
         <Head>
           <title>API Dashboard Error</title>
         </Head>
-        <div class="min-h-screen bg-green-50 flex items-center justify-center py-12 px-4">
+        <div class=" bg-green-50 flex items-center justify-center py-12 px-4">
           <div class="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
             <div class="px-6 py-8">
               <div class="text-center mb-8">
@@ -216,7 +215,7 @@ export default function Dashboard({ data }: PageProps<DashboardData>) {
       <Head>
         <title>API Dashboard</title>
       </Head>
-      <div class="min-h-screen bg-green-50 py-10 px-4">
+      <div class=" bg-green-50 py-10 px-4">
         <div class="max-w-6xl mx-auto">
           <header class="bg-white rounded-lg shadow-sm p-6 mb-8 flex justify-between items-center">
             <div>
@@ -251,6 +250,23 @@ export default function Dashboard({ data }: PageProps<DashboardData>) {
               <h2 class="text-xl font-semibold mb-4 text-gray-800">
                 Usage Metrics
               </h2>
+
+              <div class="mb-4">
+                <a
+                  href="/api/stats"
+                  class="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <svg
+                    class="-ml-1 mr-2 h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                  </svg>
+                  View Detailed Stats
+                </a>
+              </div>
 
               <div class="grid grid-cols-2 gap-4">
                 <div class="bg-gray-50 p-4 rounded-lg">
@@ -374,6 +390,7 @@ export default function Dashboard({ data }: PageProps<DashboardData>) {
                           <button
                             type="submit"
                             class="text-red-600 hover:text-red-800"
+                            // deno-lint-ignore fresh-server-event-handlers
                             onClick={() =>
                               confirm(
                                 "Are you sure you want to revoke this API key? This action cannot be undone.",
@@ -411,15 +428,15 @@ export default function Dashboard({ data }: PageProps<DashboardData>) {
               <h3>Endpoints</h3>
               <ul>
                 <li>
-                  <strong>POST /api/calculate</strong>{" "}
+                  <strong>POST /api/v1/calculate</strong>{" "}
                   - Calculate payslip deductions
                 </li>
                 <li>
-                  <strong>POST /api/preview-payslip</strong>{" "}
+                  <strong>POST /api/v1/preview-payslip</strong>{" "}
                   - Generate a preview of the payslip
                 </li>
                 <li>
-                  <strong>GET /api/download-payslip</strong>{" "}
+                  <strong>GET /api/v1/download-payslip</strong>{" "}
                   - Download a generated payslip
                 </li>
               </ul>

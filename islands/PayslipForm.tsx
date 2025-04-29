@@ -254,55 +254,76 @@ export default function PayslipForm() {
     return Object.keys(errors).length === 0;
   };
 
-  // Handle user info submission
+  // Handle user info submission and save data
   const handleUserInfoSubmit = async (e: Event) => {
     e.preventDefault();
 
-    if (validateStep("user-info")) {
-      try {
-        // First, save user info to KV store
-        const userResponse = await fetch("/api/save-user", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(userInfo),
-        });
+    // Validate form
+    if (!validateStep("user-info")) {
+      console.log("Form validation failed");
+      return;
+    }
 
-        if (!userResponse.ok) {
-          const error = await userResponse.text();
-          throw new Error(`Error saving user info: ${error}`);
-        }
-
-        // Then, save payslip data associated with this user
-        const payslipResponse = await fetch("/api/save-payslip", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: userInfo.email, // Use email as userId for simplicity
-            data: payslipData,
-          }),
-        });
-
-        if (!payslipResponse.ok) {
-          const error = await payslipResponse.text();
-          throw new Error(`Error saving payslip: ${error}`);
-        }
-
-        // Get the payslip ID from the response
-        const result = await payslipResponse.json();
-        setPayslipId(result.id);
-
-        // Move to preview step
-        setStep("preview");
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error
-          ? error.message
-          : String(error);
-        alert(`Error: ${errorMessage}`);
+    try {
+      // Get the API key from the server endpoint instead of directly accessing KV
+      const apiKeyResponse = await fetch("/api/v1/get-api-key");
+      if (!apiKeyResponse.ok) {
+        throw new Error("Failed to get API key");
       }
+
+      const apiKeyData = await apiKeyResponse.json();
+      const apiKey = apiKeyData.key;
+
+      if (!apiKey) {
+        throw new Error("Invalid API key");
+      }
+
+      console.log("Received API key for form submission");
+
+      // Save user data
+      const userResponse = await fetch("/api/v1/save-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": apiKey, // Add the API key header
+        },
+        body: JSON.stringify(userInfo),
+      });
+
+      if (!userResponse.ok) {
+        throw new Error("Failed to save user data");
+      }
+
+      // Save payslip data if user data was saved successfully
+      const payslipResponse = await fetch("/api/v1/save-payslip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": apiKey, // Add the API key header
+        },
+        body: JSON.stringify({
+          userId: userInfo.email,
+          data: payslipData,
+        }),
+      });
+
+      if (!payslipResponse.ok) {
+        throw new Error("Failed to save payslip data");
+      }
+
+      const payslipResult = await payslipResponse.json();
+      setPayslipId(payslipResult.id);
+
+      // Move to preview step
+      goToNextStep();
+    } catch (error) {
+      console.error("Error saving data:", error);
+      formErrors.value = {
+        ...formErrors.value,
+        submitError: error instanceof Error
+          ? error.message
+          : "Failed to save data",
+      };
     }
   };
 
@@ -378,21 +399,38 @@ export default function PayslipForm() {
     setStep(prevSteps[step]);
   };
 
-  // Handle download
-  const handleDownload = () => {
-    // If we have a payslip ID, use it. Otherwise, fall back to sending the data in the URL
-    if (payslipId) {
-      window.open(
-        `/api/download-payslip?id=${payslipId}`,
-        "_blank",
-      );
-    } else {
-      window.open(
-        "/api/download-payslip?" + new URLSearchParams({
-          data: JSON.stringify(payslipData),
-        }),
-        "_blank",
-      );
+  // Handle PDF download
+  const handleDownload = async () => {
+    try {
+      // Create URL with payslip ID
+      const baseUrl = "/api/v1/download-payslip";
+      const url = payslipId
+        ? `${baseUrl}?id=${encodeURIComponent(payslipId)}`
+        : `${baseUrl}?data=${encodeURIComponent(JSON.stringify(payslipData))}`;
+
+      // Get API key from server endpoint
+      const apiKeyResponse = await fetch("/api/v1/get-api-key");
+      if (!apiKeyResponse.ok) {
+        throw new Error("Failed to get API key");
+      }
+
+      const apiKeyData = await apiKeyResponse.json();
+      const apiKey = apiKeyData.key;
+
+      if (!apiKey) {
+        throw new Error("Invalid API key");
+      }
+
+      // Open in a new tab/window for download using globalThis instead of window
+      globalThis.open(`${url}&apiKey=${encodeURIComponent(apiKey)}`, "_blank");
+    } catch (error) {
+      console.error("Error downloading payslip:", error);
+      formErrors.value = {
+        ...formErrors.value,
+        downloadError: error instanceof Error
+          ? error.message
+          : "Failed to download payslip",
+      };
     }
   };
 

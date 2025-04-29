@@ -11,7 +11,6 @@ export default function App({ Component }: PageProps) {
         <link rel="stylesheet" href="/styles.css" />
       </head>
       <body class=" bg-green-50 flex flex-col min-h-screen">
-        <Header />
         <div class="flex-1">
           <Component />
         </div>

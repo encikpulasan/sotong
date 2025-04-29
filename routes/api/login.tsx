@@ -1,5 +1,6 @@
 import { Head } from "$fresh/runtime.ts";
 import { Handlers, PageProps } from "$fresh/server.ts";
+import { ApiHeader } from "../../components/ApiHeader.tsx";
 import { ApiSessionManager, verifyApiUser } from "../../utils/apiUsers.ts";
 
 interface LoginData {
@@ -80,7 +81,8 @@ export default function Login({ data }: PageProps<LoginData>) {
       <Head>
         <title>API Developer Login</title>
       </Head>
-      <div class="min-h-screen bg-green-50 flex items-center justify-center py-12 px-4">
+      <ApiHeader />
+      <div class=" bg-green-50 flex items-center justify-center py-12 px-4">
         <div class="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
           <div class="px-6 py-8">
             <div class="text-center mb-8">

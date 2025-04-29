@@ -1,6 +1,11 @@
 /// <reference lib="deno.unstable" />
 import { Handlers } from "$fresh/server.ts";
-import { getUserByEmail, saveUser, UserData } from "../../utils/kv-storage.ts";
+import {
+  getUserByEmail,
+  saveUser,
+  UserData,
+} from "../../../utils/kv-storage.ts";
+import { recordApiKeyUsage } from "../../../utils/apiUsers.ts";
 
 interface UserInfo {
   name: string;
@@ -8,9 +13,39 @@ interface UserInfo {
   phone: string;
 }
 
+// API key verification middleware
+async function verifyApiKey(request: Request): Promise<boolean> {
+  // Check header first
+  const apiKeyHeader = request.headers.get("X-API-Key");
+  if (apiKeyHeader) {
+    return await recordApiKeyUsage(apiKeyHeader);
+  }
+
+  // If no header, check query parameter
+  const url = new URL(request.url);
+  const apiKeyParam = url.searchParams.get("apiKey");
+  if (apiKeyParam) {
+    return await recordApiKeyUsage(apiKeyParam);
+  }
+
+  return false;
+}
+
 export const handler: Handlers = {
   async GET(req) {
     try {
+      // API key authentication
+      const isAuthenticated = await verifyApiKey(req);
+      if (!isAuthenticated) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized. Invalid or missing API key" }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
       const url = new URL(req.url);
       const email = url.searchParams.get("email");
 
@@ -35,6 +70,18 @@ export const handler: Handlers = {
 
   async POST(req) {
     try {
+      // API key authentication
+      const isAuthenticated = await verifyApiKey(req);
+      if (!isAuthenticated) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized. Invalid or missing API key" }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
       const userInfo = await req.json() as UserInfo;
 
       // Validate required fields

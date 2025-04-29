@@ -54,6 +54,12 @@ export async function createApiUser(
   return user;
 }
 
+export async function getAllUsers(): Promise<ApiUser[]> {
+  const store = getKvStore();
+  const users = await store.list<ApiUser>(["users"]);
+  return users;
+}
+
 export async function getApiUserByEmail(
   email: string,
 ): Promise<ApiUser | null> {

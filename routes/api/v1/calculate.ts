@@ -1,6 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
-import { calculateDeductions } from "../../utils/calculations.ts";
-import { recordApiKeyUsage } from "../../utils/apiUsers.ts";
+import { calculateDeductions } from "../../../utils/calculations.ts";
+import { recordApiKeyUsage } from "../../../utils/apiUsers.ts";
 
 // API key verification middleware
 async function verifyApiKey(request: Request): Promise<boolean> {

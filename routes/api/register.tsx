@@ -1,5 +1,6 @@
 import { Head } from "$fresh/runtime.ts";
 import { Handlers, PageProps } from "$fresh/server.ts";
+import { ApiHeader } from "../../components/ApiHeader.tsx";
 import { createApiUser } from "../../utils/apiUsers.ts";
 
 interface RegisterData {
@@ -69,7 +70,8 @@ export default function Register({ data }: PageProps<RegisterData>) {
         <Head>
           <title>API Registration Success</title>
         </Head>
-        <div class="min-h-screen bg-green-50 flex items-center justify-center py-12 px-4">
+        <ApiHeader />
+        <div class=" bg-green-50 flex items-center justify-center py-12 px-4">
           <div class="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
             <div class="px-6 py-8">
               <div class="text-center mb-8">
@@ -100,7 +102,8 @@ export default function Register({ data }: PageProps<RegisterData>) {
       <Head>
         <title>API Developer Registration</title>
       </Head>
-      <div class="min-h-screen bg-green-50 flex items-center justify-center py-12 px-4">
+      <ApiHeader />
+      <div class=" bg-green-50 flex items-center justify-center py-12 px-4">
         <div class="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
           <div class="px-6 py-8">
             <div class="text-center mb-8">

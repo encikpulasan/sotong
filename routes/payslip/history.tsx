@@ -17,6 +17,7 @@ export const handler: Handlers<PageData> = {
 
     if (!session) {
       // No session, redirect to login
+      console.log("No session, redirecting to login");
       const headers = new Headers();
       headers.set("Location", "/login");
       return new Response(null, {
@@ -139,7 +140,7 @@ export default function PayslipHistory({ data }: PageProps<PageData>) {
                     </p>
                     <div class="mt-4">
                       <a
-                        href={`/api/download-payslip?id=${payslip.id}`}
+                        href={`/api/v1/download-payslip?id=${payslip.id}`}
                         target="_blank"
                         class="inline-block px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700"
                       >
