@@ -4,22 +4,56 @@
 
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
-import * as $api_joke from "./routes/api/joke.ts";
-import * as $greet_name_ from "./routes/greet/[name].tsx";
+import * as $api_dashboard from "./routes/api/dashboard.tsx";
+import * as $api_docs from "./routes/api/docs.tsx";
+import * as $api_index from "./routes/api/index.tsx";
+import * as $api_login from "./routes/api/login.tsx";
+import * as $api_logout from "./routes/api/logout.ts";
+import * as $api_register from "./routes/api/register.tsx";
+import * as $api_stats from "./routes/api/stats.tsx";
+import * as $api_v1_calculate from "./routes/api/v1/calculate.ts";
+import * as $api_v1_download_payslip from "./routes/api/v1/download-payslip.ts";
+import * as $api_v1_download_pdf from "./routes/api/v1/download-pdf.ts";
+import * as $api_v1_get_api_key from "./routes/api/v1/get-api-key.ts";
+import * as $api_v1_logout from "./routes/api/v1/logout.ts";
+import * as $api_v1_preview_payslip from "./routes/api/v1/preview-payslip.ts";
+import * as $api_v1_save_payslip from "./routes/api/v1/save-payslip.ts";
+import * as $api_v1_save_user from "./routes/api/v1/save-user.ts";
 import * as $index from "./routes/index.tsx";
-import * as $Counter from "./islands/Counter.tsx";
+import * as $login from "./routes/login.tsx";
+import * as $logout from "./routes/logout.ts";
+import * as $payslip_history from "./routes/payslip/history.tsx";
+import * as $payslip_index from "./routes/payslip/index.tsx";
+import * as $PayslipForm from "./islands/PayslipForm.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
-    "./routes/api/joke.ts": $api_joke,
-    "./routes/greet/[name].tsx": $greet_name_,
+    "./routes/api/dashboard.tsx": $api_dashboard,
+    "./routes/api/docs.tsx": $api_docs,
+    "./routes/api/index.tsx": $api_index,
+    "./routes/api/login.tsx": $api_login,
+    "./routes/api/logout.ts": $api_logout,
+    "./routes/api/register.tsx": $api_register,
+    "./routes/api/stats.tsx": $api_stats,
+    "./routes/api/v1/calculate.ts": $api_v1_calculate,
+    "./routes/api/v1/download-payslip.ts": $api_v1_download_payslip,
+    "./routes/api/v1/download-pdf.ts": $api_v1_download_pdf,
+    "./routes/api/v1/get-api-key.ts": $api_v1_get_api_key,
+    "./routes/api/v1/logout.ts": $api_v1_logout,
+    "./routes/api/v1/preview-payslip.ts": $api_v1_preview_payslip,
+    "./routes/api/v1/save-payslip.ts": $api_v1_save_payslip,
+    "./routes/api/v1/save-user.ts": $api_v1_save_user,
     "./routes/index.tsx": $index,
+    "./routes/login.tsx": $login,
+    "./routes/logout.ts": $logout,
+    "./routes/payslip/history.tsx": $payslip_history,
+    "./routes/payslip/index.tsx": $payslip_index,
   },
   islands: {
-    "./islands/Counter.tsx": $Counter,
+    "./islands/PayslipForm.tsx": $PayslipForm,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
